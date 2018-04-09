@@ -7,6 +7,13 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "nanovg.h"
+#include <GL/glext.h>
+
+GLAPI void APIENTRY glBeginQuery (GLenum target, GLuint id);
+GLAPI void APIENTRY glEndQuery (GLenum target);
+GLAPI void APIENTRY glGetQueryiv (GLenum target, GLenum pname, GLint *params);
+GLAPI void APIENTRY glGetQueryObjectiv (GLuint id, GLenum pname, GLint *params);
+GLAPI void APIENTRY glGetQueryObjectuiv (GLuint id, GLenum pname, GLuint *params);
 
 #ifdef _MSC_VER
 #define snprintf _snprintf

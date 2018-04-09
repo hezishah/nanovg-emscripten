@@ -25,11 +25,11 @@
 #include "nanovg_gl_utils.h"
 #include "demo.h"
 #include "perf.h"
-
+#include <emscripten.h>
 
 void errorcb(int error, const char* desc)
 {
-	printf("GLFW error %d: %s\n", error, desc);
+    /*printf("GLFW error %d: %s\n", error, desc);*/
 }
 
 int blowup = 0;
@@ -50,53 +50,16 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 		premult = !premult;
 }
 
-int main()
+
+static	GLFWwindow* window;
+static	DemoData data;
+static	NVGcontext* vg = NULL;
+static	PerfGraph fps;
+static	double prevt = 0;
+
+static void one_iter(void)
 {
-	GLFWwindow* window;
-	DemoData data;
-	NVGcontext* vg = NULL;
-	PerfGraph fps;
-	double prevt = 0;
-
-	if (!glfwInit()) {
-		printf("Failed to init GLFW.");
-		return -1;
-	}
-
-	initGraph(&fps, GRAPH_RENDER_FPS, "Frame Time");
-
-	glfwSetErrorCallback(errorcb);
-
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-	window = glfwCreateWindow(1000, 600, "NanoVG", NULL, NULL);
-//	window = glfwCreateWindow(1000, 600, "NanoVG", glfwGetPrimaryMonitor(), NULL);
-	if (!window) {
-		glfwTerminate();
-		return -1;
-	}
-
-	glfwSetKeyCallback(window, key);
-
-	glfwMakeContextCurrent(window);
-
-	vg = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
-	if (vg == NULL) {
-		printf("Could not init nanovg.\n");
-		return -1;
-	}
-
-	if (loadDemoData(vg, &data) == -1)
-		return -1;
-
-	glfwSwapInterval(0);
-
-	glfwSetTime(0);
-	prevt = glfwGetTime();
-
-	while (!glfwWindowShouldClose(window))
+	if (!glfwWindowShouldClose(window))
 	{
 		double mx, my, t, dt;
 		int winWidth, winHeight;
@@ -144,11 +107,57 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	else
+	{
 
-	freeDemoData(vg, &data);
+		freeDemoData(vg, &data);
 
-	nvgDeleteGLES2(vg);
+		nvgDeleteGLES2(vg);
 
-	glfwTerminate();
+		glfwTerminate();
+	}
+}
+
+int main()
+{
+	if (!glfwInit()) {
+		printf("Failed to init GLFW.");
+		return -1;
+	}
+
+	initGraph(&fps, GRAPH_RENDER_FPS, "Frame Time");
+
+	/*glfwSetErrorCallback(errorcb);*/
+
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+	window = glfwCreateWindow(1000, 600, "NanoVG", NULL, NULL);
+//	window = glfwCreateWindow(1000, 600, "NanoVG", glfwGetPrimaryMonitor(), NULL);
+	if (!window) {
+		glfwTerminate();
+		return -1;
+	}
+
+	glfwSetKeyCallback(window, key);
+
+	glfwMakeContextCurrent(window);
+
+	vg = nvgCreateGLES2(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+	if (vg == NULL) {
+		printf("Could not init nanovg.\n");
+		return -1;
+	}
+
+	if (loadDemoData(vg, &data) == -1)
+		return -1;
+
+	glfwSwapInterval(0);
+
+	glfwSetTime(0);
+	prevt = glfwGetTime();
+
+    emscripten_set_main_loop(one_iter, 0, 0);
 	return 0;
 }

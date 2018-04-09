@@ -1,0 +1,2 @@
+#/bin/sh
+emcc $1 nanovg.c demo.c perf.c -DEMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF -s GL_UNSAFE_OPTS=1 -s NO_EXIT_RUNTIME=1 -s USE_GLFW=3 -s USE_SDL=2 -s FULL_ES3=1 -o index.html --embed-file Roboto-Bold.ttf  --embed-file Roboto-Light.ttf --embed-file Roboto-Regular.ttf --embed-file entypo.ttf --embed-file NotoEmoji-Regular.ttf --embed-file images
